@@ -119,10 +119,10 @@ Bagels.GameState = {
     
     this.pendulumString.rotation = -Math.PI/2;
     
-    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/4*Math.PI)},2000,Phaser.Easing.Linear.None);
+    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/5*Math.PI)},2000,Phaser.Easing.Quadratic.In);
     this.pendulumTween.onComplete.add(function(sprite,tween){
       sprite.reset(50,-100);
-      sprite.rotation = -Math.PI/2;
+      sprite.rotation = -3/5 * Math.PI;
     },this);
     
     
@@ -130,6 +130,9 @@ Bagels.GameState = {
     this.spritePool.enableBody = true;
     this.coinPool = this.add.group();
     this.coinPool.enableBody = true;
+    this.game.world.sendToBack(this.coinPool);
+    this.game.world.sendToBack(this.spritePool);
+    
     this.imageSizes = {};
     this.tableKeys.forEach(function(key){
       var image = this.cache.getImage(key);
@@ -229,7 +232,9 @@ Bagels.GameState = {
   },
   spawnPendulum: function(){
     var length = this.rnd.between(this.map.tileHeight,this.game.height-this.map.tileHeight);
-    this.pendulumTween.updateTweenData('duration',100/length * 6000);
+    var dur =  ~~(1/2 * Math.PI * length + 1800);
+    console.log('tween dur : ' + dur + ", length : " + length)
+    this.pendulumTween.updateTweenData('duration',dur);
     this.pendulumString.height = length;
     this.pendulumString.reset(50,-10);
     this.pendulumMass.reset(0,length);
