@@ -6,7 +6,7 @@ Bagels.GameState = {
     this.currentLayer = -1;
     this.maxLayer = 2;
     
-    this.JUMPING_SPEED = 400;
+    this.JUMPING_SPEED = 500;
     this.LEVEL_SPEED = 200;
     
     this.game.physics.arcade.gravity.y = 1000;
@@ -25,6 +25,7 @@ Bagels.GameState = {
     this.currentItem = null;
     this.myCoins = 0;
     this.game.time.advancedTiming = true;
+    this.isJumping = false;
     
   },
   create: function(){
@@ -33,18 +34,22 @@ Bagels.GameState = {
     
     this.loadLevel();
     
-    this.createOnscreenControls();
+    this.createControls();
     
     
     this.input.keyboard.addKey(Phaser.KeyCode.W).onDown.add(function(){
-      this.time.slowMotion += 0.5;
-      console.log('slower');
+      //this.time.slowMotion += 0.5;
+      //console.log('slower');
     },this);
     
      this.input.keyboard.addKey(Phaser.KeyCode.S).onDown.add(function(){
-      this.time.slowMotion -= 0.5;
-      console.log('faster');
+      //this.time.slowMotion -= 0.5;
+     // console.log('faster');
     },this);
+    
+//    this.input.onDown.add(function(){
+//      this.player.body.velocity.x = -100;
+//    },this);
     
     this.input.keyboard.addKey(Phaser.KeyCode.H).onDown.add(function(){
       console.log("FPS: " + this.game.time.fps);
@@ -71,59 +76,91 @@ Bagels.GameState = {
       }
     },this);
     
-//    for(var i = 0; i < this.spritePool.length; i++){
-//      if(this.spritePool.children[i].alive){
-//        this.game.physics.arcade.collide(this.player, this.spritePool.children[i]);
-//      
-//        if(this.spritePool.children[i].right < 0){
-//          this.spritePool.children[i].kill();
-//        }
-//      }
-//    }
+    this.pendulumPool.forEachAlive(function(pendulum){
+      pendulum.rotation = this.pendulumTweenData[pendulum.customParams.index].rotation;
+      pendulum.customParams.index += pendulum.customParams.step;
+      if(pendulum.customParams.index >= this.pendulumTweenData.length){
+        pendulum.kill();
+      }
+    },this);
+    
+    this.shadowPool.forEachAlive(function(shadow){
+      if(shadow.customParams.growing){
+        shadow.scale.setTo(this.shadowTweenData[shadow.customParams.index]['scale.x'],this.shadowTweenData[shadow.customParams.index]['scale.y']);
+        shadow.customParams.index++;
+        if(shadow.customParams.index >= this.shadowTweenData.length){
+          shadow.customParams.pendulum.revive();
+          shadow.customParams.growing = false;
+        }
+      } else {
+        
+        shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
+        //shadow.x = shadow.customParams.pendulum.x + length * Math.cos(Math.PI/2 + shadow.customParams.pendulum.rotation) + shadow.customParams.pendulum.getChildAt(0).body.width;
+        if(shadow.right < 0){
+          shadow.kill();
+        }
+      }
+      
+     
+    },this);
     
     if(this.currentItem.right < this.game.width){
       this.loadNextItem();
     } 
     
     
-    if((this.cursors.up.isDown || this.player.customParams.mustJump) && (this.player.body.blocked.down || this.player.body.touching.down)){
-      this.player.body.velocity.y = -this.JUMPING_SPEED;
-      this.player.customParams.mustJump = false;
+//    if((this.cursors.up.isDown) && (this.player.body.blocked.down || this.player.body.touching.down)){
+//      this.player.body.velocity.y = -this.JUMPING_SPEED;
+//    }
+    
+    if(this.game.input.activePointer.isDown){
+      if(!this.isJumping){
+      this.player.body.velocity.y -= this.JUMPING_SPEED;
+      this.isJumping = true;
+      }
+    } else if(this.game.input.activePointer.isUp){
+      this.isJumping = false;
     }
     
   },
   render: function(){
     
-      this.game.debug.body(this.currentItem);
+ //     this.game.debug.body(this.currentItem);
 //    this.spritePool.forEachAlive(function(item){
 //      this.game.debug.body(item);
 //    },this);
     
   },
   createSprites: function(){
-    this.player = this.add.sprite(50,50,'runner');
-    this.player.anchor.setTo(0.5);
-    this.player.animations.add('walking',[0,1,2,1],6,true,true);
-    this.game.physics.arcade.enable(this.player);
-    this.player.body.collideWorldBounds = true;
-    this.player.customParams = {};
     
-    this.pendulumString = this.add.tileSprite(50,100,35,35,'pendulumString');
-    this.pendulumString.anchor.setTo(0.5,0);
-    this.pendulumMass = this.add.sprite(0,35,'pendulumMass');
-    this.pendulumMass.anchor.setTo(0.5,0);
-    this.game.physics.arcade.enable(this.pendulumMass);
-    this.pendulumMass.body.allowGravity = false;
-    this.pendulumMass.body.immovable = true;
-    this.pendulumString.addChild(this.pendulumMass);
     
-    this.pendulumString.rotation = -Math.PI/2;
+    this.pendulumPool = this.add.group();
+    this.shadowPool = this.add.group();
     
-    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/5*Math.PI)},2000,Phaser.Easing.Quadratic.In);
-    this.pendulumTween.onComplete.add(function(sprite,tween){
-      sprite.reset(50,-100);
-      sprite.rotation = -3/5 * Math.PI;
-    },this);
+//    this.pendulumString = this.add.tileSprite(50,100,35,35,'pendulum_tring');
+//    this.pendulumString.anchor.setTo(0.5,0);
+//    this.pendulumMass = this.add.sprite(0,35,'pendulumMass');
+//    this.pendulumMass.anchor.setTo(0.5,0);
+//    this.game.physics.arcade.enable(this.pendulumMass);
+//    this.pendulumMass.body.allowGravity = false;
+//    this.pendulumMass.body.immovable = true;
+//    this.pendulumString.addChild(this.pendulumMass);
+//    this.pendulumShadow
+    
+//    this.pendulumString.rotation = -Math.PI/2;
+    
+//    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/5*Math.PI)},2000,Phaser.Easing.Quadratic.In);
+//    this.pendulumTween.onComplete.add(function(sprite,tween){
+//      sprite.reset(50,-100);
+//      sprite.rotation = -3/5 * Math.PI;
+//    },this);
+    
+    this.pendulumTweenData = this.game.make.tween({rotation: -2/3 * Math.PI}).to({rotation: 1/3 * Math.PI},1000 * 5).generateData();
+    
+    this.shadowTweenData = this.game.make.tween({'scale.x': 0, 'scale.y' : 0}).to({'scale.x' : 1, 'scale.y' : 1},2000).generateData();
+    
+    console.log('pendulumTweenData data' );
+    console.log(this.pendulumTweenData );
     
     
     this.spritePool = this.add.group();
@@ -132,6 +169,12 @@ Bagels.GameState = {
     this.coinPool.enableBody = true;
     this.game.world.sendToBack(this.coinPool);
     this.game.world.sendToBack(this.spritePool);
+    
+    this.player = this.add.sprite(50,50,'runner');
+    this.player.anchor.setTo(0.5);
+    this.player.animations.add('walking',[0,1,2,1],6,true,true);
+    this.game.physics.arcade.enable(this.player);
+    this.player.body.collideWorldBounds = true;
     
     this.imageSizes = {};
     this.tableKeys.forEach(function(key){
@@ -165,8 +208,8 @@ Bagels.GameState = {
     this.game.world.sendToBack(this.backgroundLayer);
   },
   loadNextItem: function(){
-    this.obstacleChance = this.game.rnd.realInRange(0,0.49);
-    this.obstacleChance = 0.6;
+    this.obstacleChance = this.game.rnd.realInRange(0,0.74);
+//    this.obstacleChance = 0.6;
     if(this.obstacleChance < 0.25){
       this.spawnTable();
     } else if(this.obstacleChance < 0.5){
@@ -251,53 +294,55 @@ Bagels.GameState = {
     coin.kill();
     this.myCoins++;
   },
-  createOnscreenControls: function(){
-    this.leftArrow = this.add.button(20,this.game.height-60,'arrowButton');
-    this.rightArrow = this.add.button(110,this.game.height-60,'arrowButton');
-    this.actionButton = this.add.button(this.game.width - 100,this.game.height  -60,'actionButton');
+  createControls: function(){
+   // this.game.input.
+  },
+  createPendulum: function(length){
+    var pendulum = this.pendulumPool.getFirstExists(false);
+    if(!pendulum){
+      pendulum = new Phaser.TileSprite(this.game,50,-this.map.tileHeight,this.map.tileHeight,length,'pendulum_string');
+      pendulum.anchor.setTo(0.5,0);
+      //pendulum.revive();
+      var mass = new Phaser.Sprite(this.game,0,length,'pendulum_mass');
+      mass.anchor.setTo(0.5,0);
+      this.game.physics.arcade.enable(mass);
+      mass.body.allowGravity = false;
+      mass.body.immovable = true;
+      pendulum.addChild(mass);
+      console.log('creating new pendulum')
+      
+    } else {
+      pendulum.height = length;
+      pendulum.getChildAt(0).revive();
+    }
+    pendulum.reset(50,-this.map.tileHeight);
+    pendulum.rotation = -2/3 * Math.PI;
+    pendulum.getChildAt(0).position.setTo(0,length);
+    pendulum.customParams = {};
+    pendulum.customParams.index = 0;
+    pendulum.customParams.step = ~~(5000 / (1/2 * Math.PI * length + 1800)); 
+    console.log('mass : ')
+    console.log(mass);
+    pendulum.kill();
     
-    this.leftArrow.alpha = 0.5;
-    this.rightArrow.alpha = 0.5;
-    this.actionButton.alpha = 0.5;
+    var shadow = this.shadowPool.getFirstExists(false);
+//            shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
+    var x = pendulum.x + length * Math.cos(Math.PI/2 + pendulum.rotation) + pendulum.getChildAt(0).body.width;
+    console.log('shadow x : ' + x);
+    if(!shadow){
+            shadow = new Phaser.Sprite(this.game,x,this.game.height - this.map.tileHeight/3 * 2,'pendulum_shadow');
+    } else {
+      shadow.position.setTo(x,this.game.height - this.map.tileHeight/3 * 2);
+    }
+    shadow.anchor.setTo(0.5);
+    shadow.scale.setTo(0);
     
-    this.leftArrow.fixedToCamera = true;
-    this.rightArrow.fixedToCamera = true;
-    this.actionButton.fixedToCamera = true;
+    shadow.customParams = {};
+    shadow.customParams.growing = true;
+    shadow.customParams.pendulum = pendulum;
+    shadow.customParams.index = 0;
     
-    //jump
-    this.actionButton.events.onInputDown.add(function(){
-      this.player.customParams.mustJump = true;
-    },this);
-    this.actionButton.events.onInputUp.add(function(){
-      this.player.customParams.mustJump = false;
-    },this);
-    
-    //left
-    this.leftArrow.events.onInputDown.add(function(){
-      this.player.customParams.isMovingLeft = true;
-    },this);
-    this.leftArrow.events.onInputUp.add(function(){
-      this.player.customParams.isMovingLeft = false;
-    },this);
-//    this.leftArrow.events.onInputOver.add(function(){
-//      this.player.customParams.isMovingLeft = true;
-//    },this);
-//    this.leftArrow.events.onInputOut.add(function(){
-//      this.player.customParams.isMovingLeft = false;
-//    },this);
-    
-    //right
-    this.rightArrow.events.onInputDown.add(function(){
-      this.player.customParams.isMovingRight = true;
-    },this);
-    this.rightArrow.events.onInputUp.add(function(){
-      this.player.customParams.isMovingRight = false;
-    },this);
-//    this.rightArrow.events.onInputOver.add(function(){
-//      this.player.customParams.isMovingRight = true;
-//    },this);
-//    this.rightArrow.events.onInputOut.add(function(){
-//      this.player.customParams.isMovingRight = false;
-//    },this);
+    this.pendulumPool.add(pendulum);
+    this.shadowPool.add(shadow);
   }
 }

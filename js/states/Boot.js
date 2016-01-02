@@ -9,6 +9,9 @@ Bagels.BootState = {
     this.scale.pageAlignVertically = true;
     this.scale.pageAlignHorizontally = true;
     
+    this.input.enabled = true;
+    this.input.maxPointers = 1;
+    
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
   },
   preload: function(){
