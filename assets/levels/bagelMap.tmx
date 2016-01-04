@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="80" height="12" tilewidth="35" tileheight="35" nextobjectid="240">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="80" height="12" tilewidth="35" tileheight="35" nextobjectid="264">
  <tileset firstgid="1" name="tiles_spritesheet" tilewidth="35" tileheight="35" spacing="1" tilecount="156">
   <image source="../../../Tile-Based Platformer/assets/images/tiles_spritesheet.png" width="457" height="468"/>
   <tile id="24">
@@ -25,6 +25,11 @@
   <tile id="120">
    <properties>
     <property name="key" value="endOfLayer"/>
+   </properties>
+  </tile>
+  <tile id="132">
+   <properties>
+    <property name="delay" value="100"/>
    </properties>
   </tile>
  </tileset>
@@ -2093,7 +2098,7 @@
   <object id="182" gid="160" x="1881.25" y="96.25" width="35" height="35"/>
   <object id="183" gid="160" x="1933.75" y="236.25" width="35" height="35"/>
  </objectgroup>
- <objectgroup name="coins3">
+ <objectgroup name="coins3" visible="0">
   <object id="184" gid="160" x="1382.5" y="227.5" width="35" height="35"/>
   <object id="185" gid="160" x="1382.5" y="192.5" width="35" height="35"/>
   <object id="186" gid="160" x="1242.5" y="262.5" width="35" height="35"/>
@@ -2146,5 +2151,111 @@
   <object id="234" gid="160" x="1907.5" y="192.5" width="35" height="35"/>
   <object id="235" gid="160" x="1968.75" y="227.5" width="35" height="35"/>
   <object id="236" gid="160" x="1960" y="192.5" width="35" height="35"/>
+ </objectgroup>
+ <objectgroup name="pendulum1" visible="0">
+  <object id="240" gid="133" x="35" y="105" width="35" height="35">
+   <properties>
+    <property name="delay" value="100"/>
+   </properties>
+  </object>
+  <object id="241" gid="133" x="35" y="166.25" width="35" height="35">
+   <properties>
+    <property name="delay" value="300"/>
+   </properties>
+  </object>
+  <object id="242" gid="133" x="35" y="227.5" width="35" height="35">
+   <properties>
+    <property name="delay" value="500"/>
+   </properties>
+  </object>
+  <object id="243" gid="133" x="35" y="288.75" width="35" height="35">
+   <properties>
+    <property name="delay" value="700"/>
+   </properties>
+  </object>
+  <object id="244" gid="133" x="35" y="341.25" width="35" height="35">
+   <properties>
+    <property name="delay" value="900"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="pendulum2">
+  <object id="245" gid="133" x="35" y="70" width="35" height="35">
+   <properties>
+    <property name="delay" value="500"/>
+   </properties>
+  </object>
+  <object id="246" gid="133" x="35" y="385" width="35" height="35">
+   <properties>
+    <property name="delay" value="1000"/>
+   </properties>
+  </object>
+  <object id="249" gid="133" x="35" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="2500"/>
+   </properties>
+  </object>
+  <object id="250" gid="133" x="35" y="245" width="35" height="35">
+   <properties>
+    <property name="delay" value="3000"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="pendulum3" visible="0">
+  <object id="252" gid="133" x="35" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="0"/>
+   </properties>
+  </object>
+  <object id="254" gid="133" x="70" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="300"/>
+   </properties>
+  </object>
+  <object id="255" gid="133" x="105" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="600"/>
+   </properties>
+  </object>
+  <object id="256" gid="133" x="140" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="900"/>
+   </properties>
+  </object>
+  <object id="257" gid="133" x="175" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="1200"/>
+   </properties>
+  </object>
+  <object id="258" gid="133" x="210" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="1500"/>
+   </properties>
+  </object>
+  <object id="259" gid="133" x="245" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="1800"/>
+   </properties>
+  </object>
+  <object id="260" gid="133" x="280" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="2100"/>
+   </properties>
+  </object>
+  <object id="261" gid="133" x="315" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="2400"/>
+   </properties>
+  </object>
+  <object id="262" gid="133" x="350" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="2700"/>
+   </properties>
+  </object>
+  <object id="263" gid="133" x="385" y="210" width="35" height="35">
+   <properties>
+    <property name="delay" value="3000"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

@@ -27,6 +27,11 @@ Bagels.GameState = {
     this.game.time.advancedTiming = true;
     this.isJumping = false;
     
+    this.currentItemPlaceholder = {
+      right: (this.game.width + 10),
+      width: 100
+    }
+    
   },
   create: function(){
     
@@ -36,7 +41,8 @@ Bagels.GameState = {
     
     this.createControls();
     
-    
+    console.log('map');
+    console.log(this.map);    
     this.input.keyboard.addKey(Phaser.KeyCode.W).onDown.add(function(){
       //this.time.slowMotion += 0.5;
       //console.log('slower');
@@ -85,23 +91,32 @@ Bagels.GameState = {
     },this);
     
     this.shadowPool.forEachAlive(function(shadow){
-      if(shadow.customParams.growing){
-        shadow.scale.setTo(this.shadowTweenData[shadow.customParams.index]['scale.x'],this.shadowTweenData[shadow.customParams.index]['scale.y']);
-        shadow.customParams.index++;
-        if(shadow.customParams.index >= this.shadowTweenData.length){
-          shadow.customParams.pendulum.revive();
-          shadow.customParams.growing = false;
-        }
-      } else {
-        
-        shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
-        //shadow.x = shadow.customParams.pendulum.x + length * Math.cos(Math.PI/2 + shadow.customParams.pendulum.rotation) + shadow.customParams.pendulum.getChildAt(0).body.width;
-        if(shadow.right < 0){
-          shadow.kill();
-        }
-      }
       
-     
+      if(shadow.customParams.inception == null){
+        shadow.customParams.inception = this.game.time.now;
+      }
+      if((this.game.time.now - shadow.customParams.inception) > shadow.customParams.delay){
+        if(shadow.customParams.growing){
+          shadow.scale.setTo(this.shadowTweenData[shadow.customParams.index]['scale.x'],this.shadowTweenData[shadow.customParams.index]['scale.y']);
+          shadow.customParams.index++;
+          if(shadow.customParams.index >= this.shadowTweenData.length){
+            shadow.customParams.pendulum = this.createPendulum(shadow.customParams.length);
+            shadow.customParams.growing = false;
+          }
+        } else {
+
+          shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
+          //shadow.x = shadow.customParams.pendulum.x + length * Math.cos(Math.PI/2 + shadow.customParams.pendulum.rotation) + shadow.customParams.pendulum.getChildAt(0).body.width;
+          if(shadow.right < 0 || !shadow.customParams.pendulum.alive){
+            if(shadow.customParams.isNeo){
+              this.currentItemPlaceholder.right = this.game.width  - 10;
+            }
+            shadow.kill();
+          }
+        }
+
+
+      }
     },this);
     
     if(this.currentItem.right < this.game.width){
@@ -129,6 +144,8 @@ Bagels.GameState = {
 //    this.spritePool.forEachAlive(function(item){
 //      this.game.debug.body(item);
 //    },this);
+    
+    this.game.debug.body(this.currentItem);
     
   },
   createSprites: function(){
@@ -158,9 +175,6 @@ Bagels.GameState = {
     this.pendulumTweenData = this.game.make.tween({rotation: -2/3 * Math.PI}).to({rotation: 1/3 * Math.PI},1000 * 5).generateData();
     
     this.shadowTweenData = this.game.make.tween({'scale.x': 0, 'scale.y' : 0}).to({'scale.x' : 1, 'scale.y' : 1},2000).generateData();
-    
-    console.log('pendulumTweenData data' );
-    console.log(this.pendulumTweenData );
     
     
     this.spritePool = this.add.group();
@@ -208,14 +222,14 @@ Bagels.GameState = {
     this.game.world.sendToBack(this.backgroundLayer);
   },
   loadNextItem: function(){
-    this.obstacleChance = this.game.rnd.realInRange(0,0.74);
-//    this.obstacleChance = 0.6;
+    this.obstacleChance = this.game.rnd.realInRange(0,0.85);
+//    this.obstacleChance = 0.4;
     if(this.obstacleChance < 0.25){
       this.spawnTable();
     } else if(this.obstacleChance < 0.5){
       this.spawnShelf();
     } else if(this.obstacleChance < 0.75){
-      this.spawnCoins();
+      this.spawnPendulum();
     } else if(this.obstacleChance < 0.85){
       this.spawnPendulum();
     } else if(this.obstacleChance < 0.90){
@@ -273,16 +287,44 @@ Bagels.GameState = {
     this.coinPool.setAll('body.velocity.x',-this.LEVEL_SPEED);
     this.currentItem = lastMarker;
   },
+  
+  /*
+  Think of algorithm for creating valid pendulum lengths
+  */
   spawnPendulum: function(){
-    var length = this.rnd.between(this.map.tileHeight,this.game.height-this.map.tileHeight);
-    var dur =  ~~(1/2 * Math.PI * length + 1800);
-    console.log('tween dur : ' + dur + ", length : " + length)
-    this.pendulumTween.updateTweenData('duration',dur);
-    this.pendulumString.height = length;
-    this.pendulumString.reset(50,-10);
-    this.pendulumMass.reset(0,length);
+    var rand = this.game.rnd.between(1,3), lastMarker = null;
     
-    this.pendulumTween.start();
+    
+    this.map.objects['pendulum' + rand].forEach(function(obj){
+      console.log('obj from tilemap');
+      console.log((obj.properties.delay) ? parseInt(obj.properties.delay) : "potato 100");
+      var shadow = this.createShadow(obj.y - this.map.tileHeight, (obj.properties.delay) ? parseInt(obj.properties.delay) : 100);
+      if(!lastMarker || lastMarker.customParams.delay < obj.properties.delay){
+        lastMarker = shadow;
+      }
+    },this);
+    
+    lastMarker.customParams.isNeo = true;
+    this.currentItemPlaceholder.right = this.game.width + 10;
+    this.currentItem = this.currentItemPlaceholder;
+    
+//    var start = this.game.rnd.between(this.map.tileHeight * 2, this.game.height - this.map.tileHeight * 2);
+//
+////    var locs = [];
+////    while(locs.length < rand){
+////      var good = locs.every(function(cur){return (Math.abs(cur - loc) > (this.map.tileHeight * 2))},this);
+////      if(good){
+////        locs.push(loc);
+////      }
+////    }
+//    for(var i = 0; i < rand; i++){
+//      loc = start + Math.max(this.player.height + 20, this.game.rnd.between(this.map.tileHeight, this.game.height - this.map.tileHeight * 2));
+//      if(loc > this.game.height - this.map.tileHeight){
+//        loc -= this.game.height;
+//      }
+//      this.currentItem = this.createShadow(loc + );
+//    }
+    
   },
   spawnCapacitor: function(){
     
@@ -298,7 +340,7 @@ Bagels.GameState = {
    // this.game.input.
   },
   createPendulum: function(length){
-    var pendulum = this.pendulumPool.getFirstExists(false);
+    var pendulum = this.pendulumPool.getFirstDead(false);
     if(!pendulum){
       pendulum = new Phaser.TileSprite(this.game,50,-this.map.tileHeight,this.map.tileHeight,length,'pendulum_string');
       pendulum.anchor.setTo(0.5,0);
@@ -309,40 +351,42 @@ Bagels.GameState = {
       mass.body.allowGravity = false;
       mass.body.immovable = true;
       pendulum.addChild(mass);
-      console.log('creating new pendulum')
-      
     } else {
       pendulum.height = length;
-      pendulum.getChildAt(0).revive();
+      pendulum.revive();
     }
-    pendulum.reset(50,-this.map.tileHeight);
     pendulum.rotation = -2/3 * Math.PI;
     pendulum.getChildAt(0).position.setTo(0,length);
     pendulum.customParams = {};
     pendulum.customParams.index = 0;
     pendulum.customParams.step = ~~(5000 / (1/2 * Math.PI * length + 1800)); 
-    console.log('mass : ')
-    console.log(mass);
-    pendulum.kill();
+
     
-    var shadow = this.shadowPool.getFirstExists(false);
-//            shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
-    var x = pendulum.x + length * Math.cos(Math.PI/2 + pendulum.rotation) + pendulum.getChildAt(0).body.width;
-    console.log('shadow x : ' + x);
+    this.pendulumPool.add(pendulum);
+    return pendulum;
+  },
+  createShadow(length,delay){
+    var shadow = this.shadowPool.getFirstDead(false);
+    var x = 50 + length * Math.cos(Math.PI/2 + Math.PI * -2/3) + this.map.tileHeight/2;
     if(!shadow){
-            shadow = new Phaser.Sprite(this.game,x,this.game.height - this.map.tileHeight/3 * 2,'pendulum_shadow');
+      shadow = new Phaser.Sprite(this.game,x,this.game.height - this.map.tileHeight/3 * 2,'pendulum_shadow');
     } else {
-      shadow.position.setTo(x,this.game.height - this.map.tileHeight/3 * 2);
+//     shadow.position.setTo(x,this.game.height - this.map.tileHeight/3 * 2);
+       shadow.reset(x,this.game.height - this.map.tileHeight/3 * 2);
     }
     shadow.anchor.setTo(0.5);
     shadow.scale.setTo(0);
     
     shadow.customParams = {};
     shadow.customParams.growing = true;
-    shadow.customParams.pendulum = pendulum;
     shadow.customParams.index = 0;
+    shadow.customParams.length = length;
+    shadow.customParams.delay = delay;
+    shadow.customParams.inception = null;
     
-    this.pendulumPool.add(pendulum);
+    
     this.shadowPool.add(shadow);
+    
+    return shadow;
   }
 }
