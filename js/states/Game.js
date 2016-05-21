@@ -90,35 +90,6 @@ Bagels.GameState = {
       }
     },this);
     
-    this.shadowPool.forEachAlive(function(shadow){
-      
-      if(shadow.customParams.inception == null){
-        shadow.customParams.inception = this.game.time.now;
-      }
-      if((this.game.time.now - shadow.customParams.inception) > shadow.customParams.delay){
-        if(shadow.customParams.growing){
-          shadow.scale.setTo(this.shadowTweenData[shadow.customParams.index]['scale.x'],this.shadowTweenData[shadow.customParams.index]['scale.y']);
-          shadow.customParams.index++;
-          if(shadow.customParams.index >= this.shadowTweenData.length){
-            shadow.customParams.pendulum = this.createPendulum(shadow.customParams.length);
-            shadow.customParams.growing = false;
-          }
-        } else {
-
-          shadow.x = shadow.customParams.pendulum.getChildAt(0).toGlobal(this.game.world.position).x;
-          //shadow.x = shadow.customParams.pendulum.x + length * Math.cos(Math.PI/2 + shadow.customParams.pendulum.rotation) + shadow.customParams.pendulum.getChildAt(0).body.width;
-          if(shadow.right < 0 || !shadow.customParams.pendulum.alive){
-            if(shadow.customParams.isNeo){
-              this.currentItemPlaceholder.right = this.game.width  - 10;
-            }
-            shadow.kill();
-          }
-        }
-
-
-      }
-    },this);
-    
     if(this.currentItem.right < this.game.width){
       this.loadNextItem();
     } 
@@ -152,29 +123,11 @@ Bagels.GameState = {
     
     
     this.pendulumPool = this.add.group();
-    this.shadowPool = this.add.group();
+ 
     
-//    this.pendulumString = this.add.tileSprite(50,100,35,35,'pendulum_tring');
-//    this.pendulumString.anchor.setTo(0.5,0);
-//    this.pendulumMass = this.add.sprite(0,35,'pendulumMass');
-//    this.pendulumMass.anchor.setTo(0.5,0);
-//    this.game.physics.arcade.enable(this.pendulumMass);
-//    this.pendulumMass.body.allowGravity = false;
-//    this.pendulumMass.body.immovable = true;
-//    this.pendulumString.addChild(this.pendulumMass);
-//    this.pendulumShadow
-    
-//    this.pendulumString.rotation = -Math.PI/2;
-    
-//    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/5*Math.PI)},2000,Phaser.Easing.Quadratic.In);
-//    this.pendulumTween.onComplete.add(function(sprite,tween){
-//      sprite.reset(50,-100);
-//      sprite.rotation = -3/5 * Math.PI;
-//    },this);
     
     this.pendulumTweenData = this.game.make.tween({rotation: -2/3 * Math.PI}).to({rotation: 1/3 * Math.PI},1000 * 5).generateData();
-    
-    this.shadowTweenData = this.game.make.tween({'scale.x': 0, 'scale.y' : 0}).to({'scale.x' : 1, 'scale.y' : 1},2000).generateData();
+  
     
     
     this.spritePool = this.add.group();
@@ -307,23 +260,6 @@ Bagels.GameState = {
     lastMarker.customParams.isNeo = true;
     this.currentItemPlaceholder.right = this.game.width + 10;
     this.currentItem = this.currentItemPlaceholder;
-    
-//    var start = this.game.rnd.between(this.map.tileHeight * 2, this.game.height - this.map.tileHeight * 2);
-//
-////    var locs = [];
-////    while(locs.length < rand){
-////      var good = locs.every(function(cur){return (Math.abs(cur - loc) > (this.map.tileHeight * 2))},this);
-////      if(good){
-////        locs.push(loc);
-////      }
-////    }
-//    for(var i = 0; i < rand; i++){
-//      loc = start + Math.max(this.player.height + 20, this.game.rnd.between(this.map.tileHeight, this.game.height - this.map.tileHeight * 2));
-//      if(loc > this.game.height - this.map.tileHeight){
-//        loc -= this.game.height;
-//      }
-//      this.currentItem = this.createShadow(loc + );
-//    }
     
   },
   spawnCapacitor: function(){
