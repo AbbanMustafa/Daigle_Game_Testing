@@ -9,7 +9,6 @@ Bagels.PreloadState = {
     this.load.setPreloadSprite(this.preloadBar);
   },
   preload: function(){
-    console.log('loading....');
     // this.load.image('actionButton','assets/images/actionButton.png');
     // this.load.image('arrowButton','assets/images/arrowButton.png');
     // this.load.image('endOfLevel','assets/images/endOfLevel.png');
@@ -28,30 +27,22 @@ Bagels.PreloadState = {
     this.load.image('shelf_small','assets/images/shelf_small.png');
     // this.load.image('slime','assets/images/slime.png');
     this.load.image('string','assets/images/string.png');
+    this.load.image('table','assets/images/table.png');
     this.load.image('table_large','assets/images/platform_large.png');
     this.load.image('table_medium','assets/images/platform_medium.png');
     this.load.image('table_small','assets/images/platform_small.png');
     
-    // this.load.image('coin','assets/images/coin.png');
     this.load.image('bare_minimum','assets/bareminimum/bareminimum.png');
-    this.load.image('pendulum_ass','assets/images/pendulum_mass.png');
-    this.load.image('pendulum_string','assets/images/pendulum_string.png');
-    this.load.image('pendulum_shadow','assets/images/pendulum_shadow.png');
 
     this.load.atlasJSONHash('daigle','assets/images/daigle.png','assets/images/daigle.json');
     
     this.load.image('gameTiles','assets/images/tiles_spritesheet.png');
-    this.load.tilemap('bagelMap','assets/levels/bagelMap.json',null,Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('bm_map','assets/bareminimum/bm_map.json',null,Phaser.Tilemap.TILED_JSON);
     
     this.load.image('daiglesroom','assets/images/daiglesroom.png');
     this.load.image('hitbox','assets/images/hitbox.png');
     
-    this.load.json('howdy','assets/bareminimum/howdy.json');
-    this.load.json('onebm','assets/bareminimum/onebm.json');
-    this.load.json('physics','assets/bareminimum/physics.json');
-    this.load.json('smilebm','assets/bareminimum/smilebm.json');
-    this.load.json('twobm','assets/bareminimum/twobm.json');
-    this.load.json('zoe','assets/bareminimum/zoe.json');
+  
     
   },
   update: function(){
