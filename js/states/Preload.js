@@ -37,10 +37,13 @@ Bagels.PreloadState = {
     this.load.image('pendulum_string','assets/images/pendulum_string.png');
     this.load.image('pendulum_shadow','assets/images/pendulum_shadow.png');
 
-
+    this.load.atlasJSONHash('daigle','assets/images/daigle.png','assets/images/daigle.json');
     
     this.load.image('gameTiles','assets/images/tiles_spritesheet.png');
     this.load.tilemap('bagelMap','assets/levels/bagelMap.json',null,Phaser.Tilemap.TILED_JSON);
+    
+    this.load.image('daigles_tiles','assets/levels/daiglestiles.png');
+    this.load.tilemap('daigles_room','assets/levels/background.json',null,Phaser.Tilemap.TILED_JSON);
     
   },
   update: function(){
