@@ -3,11 +3,8 @@ var Bagels = Bagels || {};
 Bagels.GameState = {
   init: function(){
     
-    this.currentLayer = -1;
-    this.maxLayer = 2;
-    
     this.JUMPING_SPEED = 300;
-    this.maxJumpDistance = 120;
+    this.maxJumpDistance = 160;
     this.LEVEL_SPEED = 200;
     
     this.game.physics.arcade.gravity.y = 1000;
@@ -23,6 +20,8 @@ Bagels.GameState = {
       return key.indexOf('shelf') !== -1;
     });
     
+    this.coinKeys = ['howdy','onebm','physics','smilebm','twobm','zoe'];
+    
     this.currentItem = null;
     this.myCoins = 0;
     this.game.time.advancedTiming = true;
@@ -36,6 +35,7 @@ Bagels.GameState = {
   },
   create: function(){
     
+    this.game.world.setBounds(0,0,this.game.world.width,this.game.world.height-15);
     this.loadLevel();
     this.createSprites();
     this.createControls();
@@ -67,8 +67,6 @@ Bagels.GameState = {
     if(this.currentItem.right < 0){
       this.loadNextItem();
     }
-    
-    this.manageBGLayer();
     
     this.spritePool.forEachAlive(function(item){
       
@@ -106,22 +104,17 @@ Bagels.GameState = {
       }
     },this);
     
-     
-    
-    
-//    if((this.cursors.up.isDown) && (this.player.body.blocked.down || this.player.body.touching.down)){
-//      this.player.body.velocity.y = -this.JUMPING_SPEED;
-//    }
-    
+
       if(this.cursors.up.isDowm || this.game.input.activePointer.isDown){
         this.playerJump();
       } else if ((this.cursors.up.isUp || this.game.input.activePointer.isUp) && this.isJumping){
         this.isJumping = false;
       }
+      
     
   },
   playerJump: function(){
-    if(this.player.body.touching.down){
+    if(this.player.body.onFloor() || this.player.body.blocked.down || this.player.body.touching.down){
       //starting point of jump
       this.startJumpY = this.player.y;
       
@@ -155,6 +148,8 @@ Bagels.GameState = {
     
     
     this.pendulumPool = this.add.group();
+    
+    
  
     
     
@@ -166,17 +161,22 @@ Bagels.GameState = {
     this.spritePool.enableBody = true;
     this.coinPool = this.add.group();
     this.coinPool.enableBody = true;
-    this.game.world.sendToBack(this.coinPool);
-    this.game.world.sendToBack(this.spritePool);
+    // this.game.world.sendToBack(this.coinPool);
+    // this.game.world.sendToBack(this.spritePool);
     
     this.player = this.add.sprite(50,50,'daigle');
     this.player.anchor.setTo(0.5);
     this.player.animations.add('running',['Daigle3','Daigle4'],6,true,false);
     this.game.physics.arcade.enable(this.player);
     this.player.body.collideWorldBounds = true;
+    this.player.body.setSize(140,200,0,10);
     this.player.animations.play('running');
     this.player.scale.setTo(0.5);
-    this.player.body.setSize(this.player.body.width-30,this.player.body.height-20,0,0);
+    // this.playerHitBox = this.add.image(0,0,'hitbox');
+    // this.playerHitBox.anchor.setTo(0.5);
+    // this.playerHitBox.visible = false;
+    // this.player.addChild(this.playerHitBox);
+    // this.player.body.setSize(120,150,15,15);
     
     this.imageSizes = {};
     this.tableKeys.forEach(function(key){
@@ -199,32 +199,13 @@ Bagels.GameState = {
   loadLevel: function(){
     
     //this.maps.push(this.add.tilemap(stage));
-    // this.map = this.add.tilemap('bagelMap');
-    this.map = this.add.tilemap('daigles_room');
+    this.map = this.add.tilemap('bagelMap');
+    this.map.addTilesetImage('tiles_spritesheet','gameTiles');
     
-    //join the tile images to the json data
-    // this.map.addTilesetImage('tiles_spritesheet','gameTiles');
-    this.map.addTilesetImage('tileset','daigles_tiles');
+    this.bg = this.add.tileSprite(0,0,this.game.world.width,this.game.world.height+20,'daiglesroom');
+    this.bg.autoScroll(-this.LEVEL_SPEED * 0.75,0);
+    this.game.world.sendToBack(this.bg);
     
-    //create bg layers
-    this.bg_layers = this.add.group();
-    this.bg_layers.add(this.map.createLayer('front'));
-    this.bg_layers.add(this.map.createLayer('2'));
-    this.bg_layers.add(this.map.createLayer('3'));
-    this.bg_layers.add(this.map.createLayer('4'));
-    this.bg_layers.forEach(function function_name(layer) {
-      layer.scrollFactorX = 0.5;
-      layer.kill();
-    },this);
-    //send background to background
-    this.map.setLayer(this.bg_layers.getAt(0));
-    this.map.currentTarget.reset(0,0);
-    this.map.currentLayer.body.velocity.x = -this.LEVEL_SPEED;
-  },
-  manageBGLayer: function(){
-    if(this.map.currentLayer.body.right < this.game.width + 100){
-      this.map.setLayer(this.bg_layers.next().reset(this.map.currentLayer.body.right,this.map.currentLayer.body.y));
-    }
   },
   loadNextItem: function(){
     this.obstacleChance = this.game.rnd.realInRange(0,0.85);
@@ -234,7 +215,7 @@ Bagels.GameState = {
     } else if(this.obstacleChance < 0.5){
       this.spawnShelf();
     } else if(this.obstacleChance < 0.75){
-      this.spawnPendulum();
+      this.spawnCoins();
     } else if(this.obstacleChance < 0.85){
       this.spawnPendulum();
     } else if(this.obstacleChance < 0.90){
@@ -272,7 +253,8 @@ Bagels.GameState = {
   },
   spawnCoins: function(){
     var sprite = null, obj = null, lastMarker = null;
-    var rndCoin = this.game.rnd.between(1,3);
+    var rndCoin = this.game.rnd.between(0,5);
+    
     if(!this.map['coins'+rndCoin]){
       return;
     }
