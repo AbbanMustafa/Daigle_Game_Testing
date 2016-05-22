@@ -215,7 +215,7 @@ Bagels.GameState = {
     } else if(this.obstacleChance < 0.5){
       this.spawnShelf();
     } else if(this.obstacleChance < 0.75){
-      this.spawnCoins();
+      this.spawnBM();
     } else if(this.obstacleChance < 0.85){
       this.spawnPendulum();
     } else if(this.obstacleChance < 0.90){
@@ -251,29 +251,34 @@ Bagels.GameState = {
     var x = this.game.rnd.between(this.game.width + this.currentItem.width,this.game.width + this.currentItem.width + 200);
     this.currentItem = this.spawnWithKey(x,this.map.tileHeight * 3,this.game.rnd.pick(this.shelfKeys),this.spritePool);
   },
-  spawnCoins: function(){
+  spawnBM: function(){
     var sprite = null, obj = null, lastMarker = null;
     var rndCoin = this.game.rnd.between(0,5);
     
-    if(!this.map['coins'+rndCoin]){
-      return;
-    }
-    this.map.objects['coins' + rndCoin].forEach(function(obj){ 
-      sprite = this.coinPool.getFirstExists(false);
-      if(!sprite){
-        sprite = this.coinPool.create(obj.x,obj.y - this.map.tileHeight,'coin');
-        sprite.body.immovable = true;
-        sprite.body.allowGravity = false;
-        sprite.body.velocity.x = -this.LEVEL_SPEED;
-      } else {
-        sprite.reset(obj.x,obj.y - this.map.tileHeight);
+    var json = this.game.cache.getJSON(this.coinKeys[rndCoin]);
+    console.log(json);
+    for(var i = 0; i < json.height;i++){
+      for(var j = 0; j < json.width; j++){
+        var isCoin = (json.layers[0].data[i * json.height + j] > 0);
+        if(isCoin){
+          sprite = this.coinPool.getFirstExists(false);
+          if(!sprite){
+            sprite = this.coinPool.create(this.game.width + j * json.tilewidth,i * json.tileheight,'bare_minimum');
+            sprite.body.immovable = true;
+            sprite.body.allowGravity = false;
+            sprite.body.velocity.x = -this.LEVEL_SPEED;
+          } else {
+            sprite.reset(this.game.width + j * json.tilewidth,i * json.tileheight);
+          }
+          sprite.customParams = {};
+          sprite.customParams.j  = j;
+          
+          if(!lastMarker || j > lastMarker.j){
+            lastMarker = sprite;
+          }
+        }
       }
-      
-      if(!lastMarker || obj.x > lastMarker.x){
-        lastMarker = sprite;
-      }
-      
-    },this);
+    }  
     this.coinPool.setAll('body.velocity.x',-this.LEVEL_SPEED);
     this.currentItem = lastMarker;
   },
