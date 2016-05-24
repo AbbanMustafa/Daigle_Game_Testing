@@ -2179,7 +2179,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="pendulum2">
+ <objectgroup name="pendulum2" visible="0">
   <object id="245" gid="133" x="35" y="70" width="35" height="35">
    <properties>
     <property name="delay" value="500"/>

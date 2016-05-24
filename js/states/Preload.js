@@ -36,6 +36,8 @@ Bagels.PreloadState = {
     this.load.image('pendulum_ass','assets/images/pendulum_mass.png');
     this.load.image('pendulum_string','assets/images/pendulum_string.png');
     this.load.image('pendulum_shadow','assets/images/pendulum_shadow.png');
+    
+    this.load.atlasJSONArray('daigle','assets/images/spritesheet.png','assets/images/sprites.json');
 
 
     

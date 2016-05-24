@@ -41,8 +41,8 @@ Bagels.GameState = {
     
     this.createControls();
     
-    console.log('map');
-    console.log(this.map);    
+//    console.log('map');
+//    console.log(this.map);    
     this.input.keyboard.addKey(Phaser.KeyCode.W).onDown.add(function(){
       //this.time.slowMotion += 0.5;
       //console.log('slower');
@@ -67,15 +67,19 @@ Bagels.GameState = {
     
     this.spritePool.forEachAlive(function(item){
       
-      this.game.physics.arcade.collide(this.player, item);
+//      this.game.physics.arcade.collide(this.player, item);
+      this.game.physics.arcade.collide(this.daigle, item);
       
       if(item.right < 0){
         item.kill();
       }
     },this);
     
+
+    
     this.coinPool.forEachAlive(function(coin){
-      this.game.physics.arcade.overlap(this.player,coin,this.collectCoin);
+//      this.game.physics.arcade.overlap(this.player,coin,this.collectCoin);
+      this.game.physics.arcade.overlap(this.daigle,coin,this.collectCoin);
       
       if(coin.right < 0){
         coin.kill();
@@ -84,7 +88,7 @@ Bagels.GameState = {
     
     this.pendulumPool.forEachAlive(function(pendulum){
       pendulum.rotation = this.pendulumTweenData[pendulum.customParams.index].rotation;
-      pendulum.customParams.index += pendulum.customParams.step;
+      pendulum.customParams.index += 1;
       if(pendulum.customParams.index >= this.pendulumTweenData.length){
         pendulum.kill();
       }
@@ -130,11 +134,17 @@ Bagels.GameState = {
     
     if(this.game.input.activePointer.isDown){
       if(!this.isJumping){
-      this.player.body.velocity.y -= this.JUMPING_SPEED;
+      this.daigle.body.velocity.y -= this.JUMPING_SPEED;
       this.isJumping = true;
       }
     } else if(this.game.input.activePointer.isUp){
       this.isJumping = false;
+    }
+    
+    if(this.daigle.body.blocked.down || this.daigle.body.touching.down){
+     this.daigle.animations.play('running');
+    } else {
+      this.daigle.frameName = 'Daigle1'
     }
     
   },
@@ -145,7 +155,7 @@ Bagels.GameState = {
 //      this.game.debug.body(item);
 //    },this);
     
-    this.game.debug.body(this.currentItem);
+//    this.game.debug.body(this.currentItem);
     
   },
   createSprites: function(){
@@ -154,27 +164,12 @@ Bagels.GameState = {
     this.pendulumPool = this.add.group();
     this.shadowPool = this.add.group();
     
-//    this.pendulumString = this.add.tileSprite(50,100,35,35,'pendulum_tring');
-//    this.pendulumString.anchor.setTo(0.5,0);
-//    this.pendulumMass = this.add.sprite(0,35,'pendulumMass');
-//    this.pendulumMass.anchor.setTo(0.5,0);
-//    this.game.physics.arcade.enable(this.pendulumMass);
-//    this.pendulumMass.body.allowGravity = false;
-//    this.pendulumMass.body.immovable = true;
-//    this.pendulumString.addChild(this.pendulumMass);
-//    this.pendulumShadow
-    
-//    this.pendulumString.rotation = -Math.PI/2;
-    
-//    this.pendulumTween = this.game.add.tween(this.pendulumString).to({rotation: (3/5*Math.PI)},2000,Phaser.Easing.Quadratic.In);
-//    this.pendulumTween.onComplete.add(function(sprite,tween){
-//      sprite.reset(50,-100);
-//      sprite.rotation = -3/5 * Math.PI;
-//    },this);
-    
-    this.pendulumTweenData = this.game.make.tween({rotation: -2/3 * Math.PI}).to({rotation: 1/3 * Math.PI},1000 * 5).generateData();
+    this.pendulumTweenData = this.game.make.tween({rotation: -2/3 * Math.PI}).to({rotation: 1/3 * Math.PI},2600).generateData();
     
     this.shadowTweenData = this.game.make.tween({'scale.x': 0, 'scale.y' : 0}).to({'scale.x' : 1, 'scale.y' : 1},2000).generateData();
+    
+    this.capacitorPool = this.game.add.group();
+    this.warningPool = this.game.add.group();
     
     
     this.spritePool = this.add.group();
@@ -184,11 +179,18 @@ Bagels.GameState = {
     this.game.world.sendToBack(this.coinPool);
     this.game.world.sendToBack(this.spritePool);
     
-    this.player = this.add.sprite(50,50,'runner');
-    this.player.anchor.setTo(0.5);
-    this.player.animations.add('walking',[0,1,2,1],6,true,true);
-    this.game.physics.arcade.enable(this.player);
-    this.player.body.collideWorldBounds = true;
+//    this.player = this.add.sprite(50,50,'runner');
+//    this.player.anchor.setTo(0.5);
+//    this.player.animations.add('walking',[0,1,2,1],6,true,true);
+//    this.game.physics.arcade.enable(this.player);
+//    this.player.body.collideWorldBounds = true;
+    
+    this.daigle = this.add.sprite(50,50,'daigle');
+    this.daigle.anchor.setTo(0.5);
+    this.daigle.animations.add('running',['Daigle3','Daigle4'],6,true,false);
+    this.game.physics.arcade.enable(this.daigle);
+    this.daigle.body.collideWorldBounds = true;
+    this.daigle.animations.play('running');
     
     this.imageSizes = {};
     this.tableKeys.forEach(function(key){
@@ -219,17 +221,17 @@ Bagels.GameState = {
     //create layer
     this.backgroundLayer = this.map.createLayer('backgroundLayer');
     //send background to back
-    this.game.world.sendToBack(this.backgroundLayer);
+    this.game.world.sendToBack(this.backgroundLayer); 
   },
   loadNextItem: function(){
     this.obstacleChance = this.game.rnd.realInRange(0,0.85);
-//    this.obstacleChance = 0.4;
+    this.obstacleChance = 10;
     if(this.obstacleChance < 0.25){
       this.spawnTable();
     } else if(this.obstacleChance < 0.5){
       this.spawnShelf();
     } else if(this.obstacleChance < 0.75){
-      this.spawnPendulum();
+      this.spawnCoins();
     } else if(this.obstacleChance < 0.85){
       this.spawnPendulum();
     } else if(this.obstacleChance < 0.90){
@@ -296,8 +298,8 @@ Bagels.GameState = {
     
     
     this.map.objects['pendulum' + rand].forEach(function(obj){
-      console.log('obj from tilemap');
-      console.log((obj.properties.delay) ? parseInt(obj.properties.delay) : "potato 100");
+//      console.log('obj from tilemap');
+//      console.log((obj.properties.delay) ? parseInt(obj.properties.delay) : "potato 100");
       var shadow = this.createShadow(obj.y - this.map.tileHeight, (obj.properties.delay) ? parseInt(obj.properties.delay) : 100);
       if(!lastMarker || lastMarker.customParams.delay < obj.properties.delay){
         lastMarker = shadow;
@@ -327,6 +329,9 @@ Bagels.GameState = {
     
   },
   spawnCapacitor: function(){
+    
+  },
+  spawnStrings: function(){
     
   },
   spawnVanDeGraff: function(){
@@ -359,7 +364,7 @@ Bagels.GameState = {
     pendulum.getChildAt(0).position.setTo(0,length);
     pendulum.customParams = {};
     pendulum.customParams.index = 0;
-    pendulum.customParams.step = ~~(5000 / (1/2 * Math.PI * length + 1800)); 
+    console.log('step: ' + pendulum.customParams.step);
 
     
     this.pendulumPool.add(pendulum);
@@ -388,5 +393,11 @@ Bagels.GameState = {
     this.shadowPool.add(shadow);
     
     return shadow;
+  },
+  createCapacitor: function(y){
+    var warning = this.warningPool.getFirstDead(false);
+    if(!warning){
+      warning = new Phaser.Sprite(this.game,this.game.width - this.map.tileHeight, y,'warning');
+    }
   }
 }
