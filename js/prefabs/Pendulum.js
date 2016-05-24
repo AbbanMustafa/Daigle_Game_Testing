@@ -13,8 +13,6 @@ Bagels.Pendulum = function(game,x,y,w,h,tweenData){
   this.mass.body.allowGravity = false;
   this.mass.body.immovable = true;
   this.string.addChild(this.mass);
-  
-  this.shadow = this.game.make.sprite(x,y,'pendulum_shadow');
 }
 
 Bagels.Pendulum.prototype = Object.create(Phaser.Group.prototype);
