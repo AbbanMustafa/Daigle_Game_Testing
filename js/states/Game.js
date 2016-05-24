@@ -10,7 +10,7 @@ var Bagels = Bagels || {};
 Bagels.GameState = {
   init: function(){
     
-    this.JUMPING_SPEED = 300;
+    this.JUMPING_SPEED = 800;
     this.maxJumpDistance = 160;
     this.LEVEL_SPEED = 200;
     this.spawnOffset = 200;
@@ -68,7 +68,7 @@ Bagels.GameState = {
       console.log("FPS: " + this.game.time.fps);
     },this)
     
-    this.currentItem = this.spawnWithKey(this.game.width,this.game.height - 35,'table_small',this.spritePool);
+    this.currentItem = this.spawnWithKey(this.game.width,this.game.height - 64,'table',this.spritePool);
   },
   update: function(){
     
@@ -78,8 +78,8 @@ Bagels.GameState = {
     
     this.spritePool.forEachAlive(function(item){
       
-      this.game.physics.arcade.collide(this.player, item);
-      this.game.physics.arcade.collide(this.playerHitBox,item,this.hitObstacle,null,this)
+      // this.game.physics.arcade.collide(this.player, item);
+      this.game.physics.arcade.collide(this.player,item,this.hitObstacle,null,this)
       if(item.right < 0){
         item.kill();
       }
@@ -145,8 +145,8 @@ Bagels.GameState = {
       }
     }
   },
-  hitObstacle: function(hitbox, obstacle){
-    if(obstacle.y > hitbox.y && hitbox.body.touching.right && !this.tripTween.isRunning){
+  hitObstacle: function(player, obstacle){
+    if(obstacle.y > player.y && player.body.touching.right && !this.tripTween.isRunning){
       //trip
       console.log('playing trip tween');
       this.player.body.velocity.y = -100;
@@ -159,13 +159,13 @@ Bagels.GameState = {
   },
   render: function(){
     
- //     this.game.debug.body(this.currentItem);
+      this.game.debug.body(this.currentItem);
 //    this.spritePool.forEachAlive(function(item){
 //      this.game.debug.body(item);
 //    },this);
     
-    this.game.debug.body(this.currentItem);
-    this.game.debug.body(this.player);
+    // this.game.debug.body(this.currentItem);
+    // this.game.debug.body(this.player);
     
   },
   createSprites: function(){
@@ -192,10 +192,10 @@ Bagels.GameState = {
     this.player.animations.play('running');
     this.player.scale.setTo(0.5);
     this.tripTween = this.game.add.tween(this.player).to({'alpha' : 0},300);
-    this.playerHitBox = this.add.image(0,0,'hitbox');
-    this.playerHitBox.anchor.setTo(0.5);
-    this.playerHitBox.visible = false;
-    this.player.addChild(this.playerHitBox);
+    // this.playerHitBox = this.add.image(0,0,'hitbox');
+    // this.playerHitBox.anchor.setTo(0.5);
+    // this.playerHitBox.visible = false;
+    // this.player.addChild(this.playerHitBox);
     this.player.body.setSize(120,150,15,15);
     
     this.imageSizes = {};
@@ -214,6 +214,11 @@ Bagels.GameState = {
         h: image.height
       };
     },this);
+    
+    this.imageSizes['outlet'] = {
+      w: 32,
+      h: 42
+    }
     
   },
   loadLevel: function(){
@@ -269,7 +274,9 @@ Bagels.GameState = {
   },
   spawnShelf: function(){
     var x = this.game.rnd.between(this.game.width + this.currentItem.width,this.game.width + this.currentItem.width + 200);
-    this.currentItem = this.spawnWithKey(x,this.map.tileHeight * 3,this.game.rnd.pick(this.shelfKeys),this.spritePool);
+    this.currentItem = this.spawnWithKey(x,this.map.tileHeight * 3,'outlet',this.spritePool);
+    this.currentItem.body.setSize(32,42,0,120);
+    this.currentItem.y-= 100;
   },
   spawnBM: function(){
     var sprite = null, obj = null, lastMarker = null;

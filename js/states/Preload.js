@@ -41,6 +41,7 @@ Bagels.PreloadState = {
     
     this.load.image('daiglesroom','assets/images/daiglesroom.png');
     this.load.image('hitbox','assets/images/hitbox.png');
+    this.load.image('outlet','assets/images/outlet.png');
     
   
     
